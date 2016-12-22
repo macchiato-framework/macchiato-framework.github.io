@@ -1,0 +1,40 @@
+{% extends "templates/html/layouts/base.html" %}
+{%block subtitle %}: {{page.title}}{% endblock %}
+{% block content %}
+
+<div class="row">
+    <div id="reading-pane" class="col-lg-9 col-md-9 col-sm-12">
+        <div id="page-header">
+            <h1>{{page.title}}</h1>
+        </div>
+        {% if page.toc %}
+        <div id="toc">{{page.toc|safe}}</div>
+        {% endif %}
+
+        <div id="content">
+            {{page.content|safe}}
+        </div>
+
+        <div id="prev-next">
+            {% if page.prev %}
+            <a class="left" href="{{page.prev.uri}}">&laquo; Prev</a>
+            {% endif %}
+            {% if page.next %}
+            <a class="right" href="{{page.next.uri}}">Next &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+    <div id="topics-list" class="col-lg-3 col-md-3 col-sm-12">
+        <div id="topics">
+            {% for section in sections %}
+            <h4>{{section.section}}</h4>
+            <ul>
+                {% for page in section.pages %}
+                <li><a href="{{page.uri}}">{{page.title}}</a></li>
+                {% endfor %}
+            </ul>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

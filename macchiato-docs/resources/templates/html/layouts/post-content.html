@@ -1,0 +1,10 @@
+<div id="post-header">
+    <h1>{{post.title}}</h1>
+    <div id="post-meta">
+        <div class="date">{{post.date|date:longDate}}</div>
+    </div>
+</div>
+<div>
+    {% if post.toc %}{{post.toc|safe}}{% endif %}
+    {{post.content|safe}}
+</div>
