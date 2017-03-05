@@ -94,54 +94,7 @@ body nav.navbar li a:hover {
 }</style><div class="row"><div class="col-md-6"><h3><img src="/imgs/clj.png" />From Clojure?</h3><p>could be connected to existing systems (EHR, EMR, LIS, RiS etc) and provides standard FHIR REST & WebSocket API for development and hosting of portable Single Page and Smart on FHIR Applications in web browsers and on mobile devices.
 </p></div><div class="col-md-6"><h3><img src="/imgs/node.png" />From NodeJS?</h3><p>
 can dramatically decrease "time to market" for your new health IT products by providing "out of the box" backbone features and continuous delivery pipeline. You can find more information on features page.
-</p></div></div></div><div class="block"><div class="markdown"><h2>MACCHIATO: CLOJURESCRIPT ARRIVES ON THE SERVER</h2><h4>November 30, 2016</h4><p>I recently started the Macchiato project to provide a platform for building ClojureScript based apps on top Node.js.</p><p>First, let's look at some of the reasons for running ClojureScript on the server. The JVM is an excellent platform, it's mature, performant, and has a large ecosystem around it. This makes it a solid choice for a wide range of applications.</p><p>However, there are situations where the JVM might not be a good fit. It's a complex piece of technology that requires experience to use effectively. It has a fairly large footprint even from small applications. The startup times can be problematic, especially when it comes to loading Clojure runtime.</p><p>Meanwhile, Node.js also happens to be a popular platform with a large ecosystem around it. It requires far less resources for certain types of applications, has very fast startup times, and its ecosystem is familiar to many JavaScript developers.</p><p>Another appeal for Node based servers comes from building full stack ClojureScript single-page applications, since using Node on the server facilitates server-side rendering for any React based libraries.</p><p>While there are a few existing experiments using ClojureScript on Node, such as Dog Fort, none of these appear to be actively maintained. Since ClojureScript and its ecosystem have evolved in the meantime, I wanted to create a fresh stack using the latest tools and best practices.</p><h3>OVERVIEW</h3><p>My goal for Macchiato is to provide a stack modeled on Ring based around the existing Node ecosystem, and a development environment similar to what's available for Clojure on the JVM.</p><p>THE STACK</p><p>I think it makes sense to embrace the Node ecosystem and leverage the existing modules whenever possible. For example, Ring style cookies map directly to the cookies NPM module. Conversely, there are a number of excellent ClojureScript libraries available as well, such as Timbre, Bidi, and Mount.</p><p>I used a Ring inspired model where I created wrappers around Node HTTP request and response objects. This allowed adapting parts of Ring, such as its session store implementation, with minimal changes.</p><p>The ClientRequest object is translated to a Clojure map, and the response map is written to the ServerResponse object. The request handler is implemented as follows:</p><pre><code>&#40;defprotocol IHTTPResponseWriter
-  &#40;-write-response &#91;data res&#93; &quot;Write data to a http.ServerResponse&quot;&#41;&#41;
-
-&#40;defn response &#91;req res opts&#93;
-  &#40;fn &#91;{:keys &#91;cookies headers body status&#93;}&#93;
-    &#40;cookies/set-cookies cookies req res &#40;:cookies opts&#41;&#41;
-    &#40;.writeHead res status &#40;clj-&gt;js headers&#41;&#41;
-    &#40;when &#40;-write-response body res&#41;
-      &#40;.end res&#41;&#41;&#41;&#41;
-
-&#40;defn handler &#91;handler-fn &amp; &#91;opts&#93;&#93;
-  &#40;let &#91;opts &#40;or opts {}&#41;&#93;
-    &#40;fn &#91;req res&#93;
-      &#40;handler-fn &#40;req-&gt;map req res opts&#41; &#40;response req res opts&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>The handler accepts a handler-fn function that's passed the request map produced by the req->map helper. The handler-fn is expected to return a request handler function that will be used to generate the response. This function should accept the request map and the response call back function that writes the response map to the ServerResponse object. The IHTTPResponseWriter protocol is used to serialize different kinds of responses.</p><h3>CONCURRENT REQUEST HANDLING</h3><p>JVM servers commonly use a listener thread for accepting client requests, the connections are then passed on to a thread pool of request handlers. This allows the listener to continue accepting connections while the requests are being processed.</p><p>Since Node is single threaded, long running request handlers block the server until they finish. While async operations can be used to handle IO in the background, any business logic will end up preventing the server from accepting new connections while it's running.</p><p>One way around this is to use the cluster module that spins up a single listening process that forks child processes and dispatches the requests to them. Setting this up is pretty straight forward:</p><pre><code>&#40;defstate env :start &#40;config/env&#41;&#41;
-
-&#40;defstate http :start &#40;js/require &quot;http&quot;&#41;&#41;
-
-&#40;defn app &#91;&#93;
-  &#40;mount/start&#41;
-  &#40;let &#91;host &#40;or &#40;:host env&#41; &quot;127.0.0.1&quot;&#41;
-        port &#40;or &#40;some-&gt; env :port js/parseInt&#41; 3000&#41;&#93;
-    &#40;-&gt; @http
-        &#40;.createServer
-          &#40;handler
-            router
-            {:cookies {:signed? true}
-             :session {:store &#40;mem/memory-store&#41;}}&#41;&#41;
-        &#40;.listen port host #&#40;info &quot;{{name}} started on&quot; host &quot;:&quot; port&#41;&#41;&#41;&#41;&#41;
-
-&#40;defn start-workers &#91;os cluster&#93;
-  &#40;dotimes &#91;&#95; &#40;-&gt; os .cpus .-length&#41;&#93;
-    &#40;.fork cluster&#41;&#41;
-  &#40;.on cluster &quot;exit&quot;
-       &#40;fn &#91;worker code signal&#93;
-         &#40;info &quot;worker terminated&quot; &#40;-&gt; worker .-process .-pid&#41;&#41;&#41;&#41;&#41;
-
-&#40;defn main &#91;&amp; args&#93;
-  &#40;let &#91;os      &#40;js/require &quot;os&quot;&#41;
-        cluster &#40;js/require &quot;cluster&quot;&#41;&#93;
-    &#40;if &#40;.-isMaster cluster&#41;
-      &#40;start-workers os cluster&#41;
-      &#40;app&#41;&#41;&#41;&#41;
-</code></pre><p>However, it's worth noting that unlike threads, processes don't share memory. So, each child that gets spun up will require its own copy of the memory space.</p><h3>THE TEMPLATE</h3><p>I setup a template that creates a minimal app with some reasonable defaults. This template is published to Clojars, and you can try it out yourself by running:</p><pre><code>lein new macchiato myapp
-</code></pre><p>The template is setup similarly to Luminus. The source code for the project is found in the src folder, and the env folder contains code that's specific for dev and prod environments.</p><p>The project.clj contains dev and release profiles for working with the app in development mode and packaging it for production use. The app can be started in development mode by running:</p><pre><code>lein build
-</code></pre><p>This will clean the project, download NPM modules, and start the Figwheel compiler. Once Figwheel compiles the sources, you can run the app with Node in another terminal as follows:</p><pre><code>node target/out/myapp.js
-</code></pre><p>The app should now be available at http://localhost:3000.</p><p>Figwheel also starts the nREPL at localhost:7000. You can connect to it from the editor and run (cljs) to load the ClojureScript REPL.</p><p>Packaging the app for production is accomplished by running:</p><pre><code>lein package
-</code></pre><p>This will print out package.json for the app and generate the release artifact called target/release/myapp.js.</p><h3>LOOKING FORWARD</h3><p>Overall, I think that ClojureScript on top of Node is ready for prime time. It opens up server-side Clojure development to a large community of JavaScript developers, and extends the reach of Clojure to any platform that supports Node.</p><p>While the initial results are very promising, there is still much work to be done in order to provide a solid stack such as Luminus. If you think this project is interesting, feel free to ping me via email or on the Clojurians slack. I would love to collaborate on making Macchiato into a solid choice for developing Node based applications.</p></div></div></div></div><div id="footer"><style type="text/css">#footer {
+</p></div></div></div><div class="block"><div class="markdown"><h2>MACCHIATO: CLOJURESCRIPT ARRIVES ON THE SERVER</h2><p>Macchiato is a ClojureScript micro-framework based on a set of lightweight libraries. It aims to provide a robust, scalable, and easy to use platform. With Macchiato you can focus on developing your app the way you want without any distractions.</p></div></div></div></div><div id="footer"><style type="text/css">#footer {
   padding-bottom: 54px;
   height: 360px;
   margin-right: 0px;
