@@ -1,0 +1,116 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container-fluid"><style type="text/css">.docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+.docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+.docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+.docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-2 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="libraries">Libraries</a></li><li><a href="overview">Overview</a></li><li><a href="getting-started">Getting Started</a></li><li class="active"><a href="configuration">Configuration</a></li><li><a href="VPS-deployment">VPS Deployment</a></li><li><a href="documentation">Documentation</a></li></ul></div><div class="col-md-9"><h1>Environment Variables</h1><p>The configuration is represented by a map. the map is constructed by aggregating variables from multiple sources in the environment. The default sources include EDN configuration and shell variables.</p><h3>EDN Based Configuration</h3><p>The library will first look for a <code>config.edn</code> file on the resource path. This will be used as the base configuration for the application. An external configuration file can be specified using the <code>conf</code> environment variable at runtime, e.g: <code>export CONF=&quot;prod-config.edn&quot;</code>.</p><p>The configuration placed in the configuration file should consist of a map such as the following:</p><pre><code class="clojure">{:port 4000
+ :host &quot;127.0.0.1&quot;}
+</code></pre><p>This configuration will be merged on top of the configuration found in the environment. The library uses a deep merge strategy, so any nested structures will be merged intelligently.</p><h3>Managing Environment Variables</h3><p>Environment variable names are converted into Clojure style keywords. These variables are parsed using the following strategy:</p><ul><li><code>PORT=3000</code> -> <code>{:port 3000}</code></li><li><code>NREPL&#95;PORT=7000</code> - <code>{:nrepl-port 7000}</code></li><li><code>DATABASE&#95;URL=&quot;jdbc:h2:./guestbook&#95;dev.db&quot;</code> -> <code>{:database-url &quot;jdbc:h2:./guestbook&#95;dev.db&quot;}</code></li><li><code>IO&#95;&#95;HTTP&#95;MAX&#95;CONNECTIONS=&quot;{:value 10}&quot;</code> -> <code>{:io {:http-max-connections {:value 10}}}</code></li></ul><p>Note that the <code>&#95;</code> is converted to <code>-</code>, while <code>&#95;&#95;</code> is used to indicate nesting for shell variables. These conventions can be mixed as seen with <code>IO&#95;&#95;HTTP&#95;MAX&#95;CONNECTIONS</code>.</p><p>The library will attempt to parse variables in the following order:</p><ul><li>attempt to parse numeric value</li><li>attempt to parse boolean</li><li>variables that start with a letter are treated as strings</li><li>any other variables are parsed as EDN</li></ul><h3>Configuration Order</h3><p>The environment configuration will be read as the default.</p><p>Next, the library will look for the <code>conf</code> environment variable. When present, it will attempt to read configuration from the file pointed to by this variable.</p><p>When the <code>conf</code> environment variable is not present, the library will look for a file called <code>config.edn</code> at the location where the app was run.</p><p>When a configuration file is found, it will be deep merged on top of the configuration read from the envrionment.</p></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>
