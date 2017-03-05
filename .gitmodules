@@ -1,0 +1,3 @@
+[submodule "vendor/esthatic"]
+	path = vendor/esthatic
+	url = https://github.com/niquola/esthatic

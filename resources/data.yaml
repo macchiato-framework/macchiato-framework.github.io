@@ -1,0 +1,36 @@
+brand: Macchiato
+moto: ClojureScript arrives on server
+menu:
+  brand: Macchiato
+  items:
+  -   href: /docs/getting-started
+      text: Getting Started
+  -   href: /docs/documentation
+      text: Documentation
+  -   href: /api/core/index.html
+      text: API
+  -   href: https://github.com/macchiato-framework
+      icon: github
+      text: Source Code
+      
+features:
+- id: docs
+  title: From Clojure?
+  img: clj.png
+  text: >
+    could be connected
+    to existing systems (EHR, EMR, LIS, RiS etc)
+    and provides standard FHIR REST & WebSocket API
+    for development and hosting of portable Single Page
+    and Smart on FHIR Applications in web browsers and
+    on mobile devices.
+
+- id: github
+  title: From NodeJS?
+  img: node.png
+  text: >
+
+    can dramatically decrease "time to market" for your new health IT products
+    by providing "out of the box" backbone features and continuous delivery pipeline.
+    You can find more information on features page.
+
