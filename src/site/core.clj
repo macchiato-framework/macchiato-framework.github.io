@@ -214,7 +214,7 @@
    })
 
 (def config
-  {:port 8888
+  {:port 3000
    :repo "https://github.com/niquola/macchiato-framework.github.io"
    :es/hiccup [#'esh/bootstrap-hiccup
                #'esh/yaml-hiccup
@@ -227,7 +227,8 @@
 ;; (defn -main [] (es/generate config))
 
 (defn start []
-  (es/restart config))
+ (es/restart config)
+   (println "started on port: " (:port config)))
 
 (defn generate [config]
   (let [prefix (or (:prefix config) (System/getenv "SITE_PREFIX") "/macchiato-site")]
