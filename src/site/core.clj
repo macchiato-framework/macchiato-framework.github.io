@@ -230,7 +230,7 @@
    (println "started on port: " (:port config)))
 
 (defn generate []
-  (let [prefix (or (System/getenv "SITE_PREFIX") "/")]
+  (let [prefix (or (System/getenv "SITE_PREFIX") "")]
     (es/generate (assoc config :es/prefix prefix))))
 
 (defn publish []
