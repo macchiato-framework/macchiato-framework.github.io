@@ -53,5 +53,47 @@ As you can see in the above example, the form contains a hidden field with the n
 This field contains the value of the CSRF token that will be checked by the anti-forgery middleware when
 the request is submitted to the server.
 
+### Password Hashing
 
+Password hashing is handled by the [macchiato-crypto](https://github.com/macchiato-framework/macchiato-crypto)
+library.
 
+First, you have to pick an encryption algorithm, either `bcrypt` or `scrypt`:
+
+```clojure
+(require '[macchiato.crypto.<algorithm> :as password])
+```
+
+Then use the `encrypt` function to apply a secure, one-way encryption
+algorithm to a password:
+
+```clojure
+(def encrypted (password/encrypt "foobar"))
+```
+
+And the `check` function to check the encrypted password against a
+plaintext password:
+
+```clojure
+(password/check "foobar" encrypted) ;; => true
+```
+
+The `encrypt` and `check` functions have async versions as well:
+
+```clojure
+(password/encrypt-async
+  "secret"
+  (fn [err result]
+    (is (scrypt/check "secret" result))))
+
+(password/check-async
+  "secret"
+  (password/encrypt "secret")
+  (fn [err result]
+    (is result)))
+```
+
+### Authentication
+
+Authentication is handled by the [macchiato-auth](https://github.com/macchiato-framework/macchiato-auth) library.
+`
