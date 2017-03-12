@@ -1,3 +1,9 @@
+---
+title: Component Life Cycle
+layout: :page
+page-index: 4
+section: ???
+---
 
 Macchiato encourages using the [Clean Architecture](https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) style for writing web applications.
 
@@ -15,11 +21,11 @@ The route handler function will be responsible for calling the function that fet
 | business |
 |  logic   |
 |          |
-+-----+----+
++-----|----+
       |
 ------|---------------------
       |     stateful code
-+-----+----+   +-----------+
++-----|----+   +-----------+
 |  route   |   |           |
 | handlers +---+  database |
 |          |   |           |
