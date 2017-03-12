@@ -145,24 +145,47 @@
 
 
 (defn $doc [{{id :doc-id} :params data :data uri :uri :as opts}]
-  [:div.container-fluid
+  [:div.container
+   [:link {:rel "stylesheet" :href "//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css"}]
+   [:script {:src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"}]
+   [:script {:src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"}]
+   [:script {:src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"}]
+   [:script {:src "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"}]
+   [:script "
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+"]
    [:css
-    [:.docs-nav 
-     [:li
-      {:border-left "4px solid #eee"}
-      [:a {:color "#888"
-           :padding "5px 20px"}]
-      [:&.active {:border-left "4px solid #777"}
-       [:a {:color "#333"}]]]]]
-   [:.row 
-    [:.col-md-2.docs-nav
+    [:body
+     [:.doc [:pre {:background "f5f5f5 !important"
+                   :padding "20px !important"
+                   :border-top "none !important"
+                   :border-bottom "none !important"
+                   :border-right "4px solid #f1f1f1"
+                   :border-left "4px solid #f1f1f1"
+                   :border-radius "0"}]]
+     [:.docs-nav
+      [:li
+       {:border-left "4px solid #eee"}
+       [:a {:color "#888"
+            :padding "5px 20px"}]
+       [:&.active {:border-left "4px solid #777"}
+        [:a {:color "#333"}]]]]]]
+   [:.row
+    [:.col-md-9.doc
+     [:h1 (get-in data [:files id :title])]
+     [:md/md (get-in data [:files id :content])]]
+    [:.col-md-3.docs-nav
      [:h3 "Documentation"]
      [:ul.nav
       (for [[bn f] (sort-by (fn [[k v]] (:page-index v)) (:files data))]
         [:li {:class (when (str/ends-with? uri bn) "active")}
-         [:a {:href bn } (or (:title f) bn)]])]]
-    [:.col-md-9
-     [:md/md (get-in data [:files id :content])]]]])
+         [:a {:href (str bn ".html") } (or (:title f) bn)]])]]
+    ]])
 
 (def meta-start-regex  #"^---")
 
@@ -229,9 +252,10 @@
  (es/restart config)
    (println "started on port: " (:port config)))
 
-(defn generate []
-  (let [prefix (or (System/getenv "SITE_PREFIX") "")]
-    (es/generate (assoc config :es/prefix prefix))))
+(defn generate [& [cfg]]
+  (let [cfg (or cfg {})
+        prefix (or (System/getenv "SITE_PREFIX") "")]
+    (es/generate (merge config cfg  {:es/prefix prefix}))))
 
 (defn publish []
   (println (sh/sh "bash" "-c" "rm -rf dist"))
@@ -251,7 +275,8 @@
   (println (sh/sh "bash" "-c" "cd dist && git init && git add -A  && git commit -a -m 'build' && git remote add origin https://github.com/niquola/macchiato-site.git && git checkout -b gh-pages && git push -f origin gh-pages"))
   (es/restart config)
 
-  (generate (merge config {:prefix "/"}))
+  (generate {:prefix "/"})
+
   (publish)
   (local-publish)
   )

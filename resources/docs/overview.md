@@ -4,8 +4,6 @@ page-index: 0
 
 ---
 
-## Overview
-
 ### Macchiato HTTP Core
 
 
