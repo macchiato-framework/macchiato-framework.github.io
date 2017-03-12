@@ -224,13 +224,12 @@
                #'esh/markdown-hiccup]
    :es/routes #'routes })
 
-;; (defn -main [] (es/generate config))
 
 (defn start []
   (es/restart config))
 
-(defn generate [config]
-  (let [prefix (or (:prefix config) (System/getenv "SITE_PREFIX") "/macchiato-site")]
+(defn generate []
+  (let [prefix (or (System/getenv "SITE_PREFIX") "/")]
     (es/generate (assoc config :es/prefix prefix))))
 
 (defn publish []
@@ -244,6 +243,8 @@
   (println (sh/sh "bash" "-c" "rm -rf dist/.git"))
   (generate (merge config {:prefix "/macchiato-site"}))
   (println (sh/sh "bash" "-c" "cd dist && git init && git add -A  && git commit -a -m 'build' && git remote add origin https://github.com/niquola/macchiato-site.git && git checkout -b gh-pages && git push -f origin gh-pages")))
+
+(defn -main [] (es/generate config))
 
 (comment
   (println (sh/sh "bash" "-c" "cd dist && git init && git add -A  && git commit -a -m 'build' && git remote add origin https://github.com/niquola/macchiato-site.git && git checkout -b gh-pages && git push -f origin gh-pages"))

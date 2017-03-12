@@ -1,0 +1,25 @@
+language: clojure
+lein: lein2
+jdk:
+  - oraclejdk8
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - $HOME/.m2
+
+before_install:
+  - echo 'here'
+
+script: |
+  set -e &&
+  git clone https://github.com/macchiato-framework/macchiato-framework.github.io dist &&
+  lein generate &&
+  cd dist &&
+  git commit -am  "autobuild" &&
+  eval `ssh-agent -s` &&
+  openssl aes-256-cbc -K $encrypted_f267b4996984_key -iv $encrypted_f267b4996984_iv -in id_rsa.enc -d | ssh-add - &&
+  git push origin master
+
