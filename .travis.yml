@@ -23,8 +23,8 @@ script: |
   lein generate &&
   git config --global user.name `git --no-pager show -s --format='%an'` &&
   git config --global user.email `git --no-pager show -s --format='%ae'` &&
-  cd dist &&
-  git commit -am  "autobuild" &&
   eval `ssh-agent -s` &&
   openssl aes-256-cbc -K $encrypted_f267b4996984_key -iv $encrypted_f267b4996984_iv -in id_rsa.enc -d | ssh-add - &&
+  cd dist &&
+  git commit -am  "autobuild" &&
   git push origin master
