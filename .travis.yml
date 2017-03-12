@@ -23,5 +23,6 @@ script: |
   eval `ssh-agent -s` &&
   openssl aes-256-cbc -K $encrypted_f267b4996984_key -iv $encrypted_f267b4996984_iv -in id_rsa.enc -d | ssh-add - &&
   cd dist &&
+  git add . &&
   git commit -am  "autobuild" &&
   git push git@github.com:macchiato-framework/macchiato-framework.github.io master
