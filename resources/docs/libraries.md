@@ -3,8 +3,6 @@ title: Libraries
 page-index: 2
 ---
 
-## Useful Libraries
-
 ### routing
 
 * [router](https://github.com/darkleaf/router)

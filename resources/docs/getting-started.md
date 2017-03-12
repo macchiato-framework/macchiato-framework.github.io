@@ -5,8 +5,6 @@ page-index: 1
 section: "Getting Started"
 ---
 
-# Getting Started
-
 This tutorial will guide you through building a simple guestbook application using Macchiato. The guestbook allows users to leave a message and to view a list of messages left by others. The application will demonstrate the basics of HTML templating, database access, and project architecture.
 
 ### Requirements

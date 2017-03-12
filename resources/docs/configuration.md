@@ -5,7 +5,7 @@ page-index: 2
 section: "Getting Started"
 ---
 
-# Environment Variables
+## Environment Variables
 
 The configuration is represented by a map. the map is constructed by aggregating variables from
 multiple sources in the environment. The default sources include EDN configuration and shell variables.
