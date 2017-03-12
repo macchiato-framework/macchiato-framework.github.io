@@ -13,6 +13,10 @@ cache:
 before_install:
   - echo 'here'
 
+branches:
+  only:
+  - src
+
 script: |
   set -e &&
   git clone https://github.com/macchiato-framework/macchiato-framework.github.io dist &&
