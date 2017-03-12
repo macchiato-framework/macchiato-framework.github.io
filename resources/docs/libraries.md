@@ -9,6 +9,11 @@ page-index: 2
 
 * [router](https://github.com/darkleaf/router)
 * [bide](https://github.com/funcool/bide)
+* [route-map](https://github.com/niquola/route-map)
+
+## Security
+
+* [Stanford Javascript Crypto Library](http://bitwiseshiftleft.github.io/sjcl/)
 
 ### Deployment
 

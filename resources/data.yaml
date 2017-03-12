@@ -18,19 +18,12 @@ features:
   title: From Clojure?
   img: clj.png
   text: >
-    could be connected
-    to existing systems (EHR, EMR, LIS, RiS etc)
-    and provides standard FHIR REST & WebSocket API
-    for development and hosting of portable Single Page
-    and Smart on FHIR Applications in web browsers and
-    on mobile devices.
+    The goal for Macchiato is to provide a way to build Node web applications using CojureScript.
+    Startup time, memory footprint .... TODO
 
 - id: github
   title: From NodeJS?
   img: node.png
   text: >
-
-    can dramatically decrease "time to market" for your new health IT products
-    by providing "out of the box" backbone features and continuous delivery pipeline.
-    You can find more information on features page.
+    Use well-designed language & libraries on top of your runtime
 
