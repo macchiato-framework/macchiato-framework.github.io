@@ -1,0 +1,179 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container"><link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"></script><script>
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+</script><style type="text/css">body .doc pre {
+  background: f5f5f5 !important;
+  padding: 20px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: 4px solid #f1f1f1;
+  border-left: 4px solid #f1f1f1;
+  border-radius: 0;
+}
+
+body .docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+body .docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+body .docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+body .docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-9 doc"><h1>Sessions and Cookies</h1><h2>Sessions</h2><p>Macchiato defaults to using in-memory sessions.</p><p>The session middleware is initialized in the <code>&lt;app&gt;.middleware</code> namespace by the <code>wrap-defaults</code> function. Session timeout is specified in second and defaults to 30 minutes of inactivity.</p><p>We can easily swap the default memory store for a different one, such as a cookie store. Below, we explicitly specify the <code>ring.middleware.session.cookie/cookie-store</code> with the name <code>example-app-session</code> as our session store:</p><pre><code class="clojure">&#40;wrap-defaults
+  &#40;-&gt; site-defaults
+      &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
+      &#40;assoc-in &#91;:session :store&#93; &#40;cookie-store&#41;&#41;
+      &#40;assoc-in &#91;:session :cookie-name&#93; &quot;example-app-sessions&quot;&#41;&#41;&#41;
+</code></pre><p>We can also specify the maximum age for our session cookies using the <code>:max-age</code> key:</p><pre><code class="clojure">&#40;wrap-defaults
+  &#40;-&gt; site-defaults
+      &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
+      &#40;assoc-in &#91;:session :store&#93; &#40;cookie-store&#41;&#41;
+      &#40;assoc-in &#91;:session :cookie-attrs&#93; {:max-age 10}&#41;&#41;&#41;
+</code></pre><p>When using cookie store it is also important to specify a secret key (16 characters) for cookie encryption. Otherwise a random one will be generated each time application is started and sessions created before will be lost.</p><pre><code class="clojure">&#40;wrap-defaults
+  &#40;-&gt; site-defaults
+      &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
+      &#40;assoc-in &#91;:session :store&#93; &#40;cookie-store {:key &quot;BuD3KgdAXhDHrJXu&quot;}&#41;&#41;
+      &#40;assoc-in &#91;:session :cookie-name&#93; &quot;example-app-sessions&quot;&#41;&#41;&#41;
+</code></pre><h3>Accessing the session</h3><p>Ring tracks sessions using the request map and the current session will be found under the <code>:session</code> key. Below we have a simple example of interaction with the session.</p><pre><code class="clojure">&#40;ns &lt;project-name&gt;.routes
+  &#40;:require
+   &#91;macchiato.util.response :refer &#91;response&#93;&#93;&#41;&#41;
+
+&#40;defn set-user! &#91;{:keys &#91;params session&#93;} res raise&#93;
+  &#40;let &#91;id &#40;:id params&#41;&#93;
+    &#40;-&gt; &#40;response &#40;str &quot;User set to: &quot; id&#41;&#41;
+        &#40;assoc :session &#40;assoc session :user id&#41;&#41;
+        &#40;response/content-type &quot;text/plain&quot;&#41;
+        &#40;response/ok&#41;
+        &#40;res&#41;&#41;&#41;&#41;
+
+&#40;defn remove-user! &#91;{session :session} res raise&#93;
+  &#40;-&gt; &#40;response &quot;User removed&quot;&#41;
+      &#40;assoc :session &#40;dissoc session :user&#41;&#41;
+      &#40;response/content-type &quot;text/plain&quot;&#41;
+      &#40;response/ok&#41;
+      &#40;res&#41;&#41;&#41;
+
+&#40;defn clear-session! &#91;req res raise&#93;
+  &#40;-&gt; &#40;response &quot;Session cleared&quot;&#41;
+      &#40;dissoc :session&#41;
+      &#40;response/content-type &quot;text/plain&quot;&#41;
+      &#40;response/ok&#41;
+      &#40;res&#41;&#41;&#41;
+
+&#40;def routes
+&#91;&#91;&quot;/&quot; {&quot;login/:id&quot; set-user!
+       &quot;remove&quot; remove-user!
+       &quot;logout&quot; clear-session!}&#93;&#93;&#41;
+</code></pre><h3>Flash sessions</h3><p>Flash sessions have a lifespan of a single request, these can be accessed using the <code>:flash</code> key instead of the <code>:session</code> key used for regular sessions.</p><h2>Cookies</h2><p>Cookies are found under the <code>:cookies</code> key of the request, eg:</p><pre><code class="clojure">{:cookies {&quot;username&quot; {:value &quot;Bob&quot;}}}
+
+</code></pre><p>Conversely, to set a cookie on the response we simply update the response map with the desired cookie value:</p><pre><code class="clojure">&#40;-&gt; &quot;response with a cookie&quot; response &#40;assoc-in &#91;:cookies &quot;username&quot; :value&#93; &quot;Alice&quot;&#41;&#41;
+</code></pre><p>Cookies can contain the following additional attributes in addition to the <code>:value</code> key:</p><ul><li>:domain - restrict the cookie to a specific domain</li><li>:path - restrict the cookie to a specific path</li><li>:secure - restrict the cookie to HTTPS URLs if true</li><li>:http-only - restrict the cookie to HTTP if true (not accessible via e.g. JavaScript)</li><li>:max-age - the number of seconds until the cookie expires</li><li>:expires - a specific date and time the cookie expires</li></ul></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="overview.html">Overview</a></li><li><a href="getting-started.html">Getting Started</a></li><li><a href="security.html">Security</a></li><li><a href="libraries.html">Libraries</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li class="active"><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>

@@ -1,0 +1,152 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container"><link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"></script><script>
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+</script><style type="text/css">body .doc pre {
+  background: f5f5f5 !important;
+  padding: 20px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: 4px solid #f1f1f1;
+  border-left: 4px solid #f1f1f1;
+  border-radius: 0;
+}
+
+body .docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+body .docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+body .docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+body .docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-9 doc"><h1>Input Validation</h1><p>Macchiato uses <a href='https://funcool.github.io/struct/latest/'>Struct</a> as the default validation library.</p><p>Struct provides <code>struct.core/validate</code> and <code>struct.core/valid?</code> functions for handling validation.</p><p>Before we see how validation works, let's include <code>struct.core</code> in our namespace.</p><pre><code class="clojure">&#40;ns myapp.home
+  &#40;:require
+    ...
+    &#91;struct.core :as st&#93;&#41;&#41;
+</code></pre><p>Next, we'll define a validation schema for our data using the helpers from the <code>struct.core</code> namespace:</p><pre><code class="clojure">&#40;def album-schema
+  &#91;&#91;:band st/required st/string&#93;
+   &#91;:album st/required st/string&#93;
+   &#91;:year st/required st/number&#93;&#93;&#41;
+</code></pre><p>We can now validate the data using the schema as follows:</p><pre><code>&#40;st/validate {:band &quot;MONO&quot; :album &quot;Hymn to the Immortal Wind&quot; :year 2009} album-schema&#41;
+;; =&gt; &#91;nil {:band &quot;MONO :album &quot;Hymn to the Immortal Wind&quot; :year 2009}&#93;
+
+&#40;st/validate {:band &quot;MONO&quot; :album &quot;Hymn to the Immortal Wind&quot; :year &quot;2009&quot;} album-schema&#41;
+;; =&gt; &#91;{:year &quot;must be a number&quot;} {:band &quot;MONO&quot; :album &quot;Hymn to the Immortal Wind&quot; :year &quot;2009&quot;}&#93;
+</code></pre><p>As you can see above, the <code>validate</code> function will return a vector with two elements. When the data passes validation the first element will be <code>nil</code>, and the second will be the original data. When the validation fails, the first element will be a map of errors associated with the keys that failed validation.</p><p>The <code>valid?</code> function will return a boolean value indicating whether the data is valid or not:</p><pre><code class="clojure">&#40;st/validate {:band &quot;MONO&quot; :album &quot;Hymn to the Immortal Wind&quot; :year 2009} album-schema&#41;
+;; =&gt; true
+</code></pre><p>Validation for nested data is specified using a vector path to the elements as follows:</p><pre><code class="clojure">&#40;def schema
+  {&#91;:a :b&#93; st/integer
+   &#91;:c :d&#93; st/string}&#41;
+
+&#40;st/valid? {:a {:b &quot;foo&quot;} {:c {:d &quot;bar&quot;}}} schema&#41;
+;; =&gt; false
+</code></pre><p>For further examples, please refer to the <a href='https://funcool.github.io/struct/latest/'>official project page</a>.</p></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="overview.html">Overview</a></li><li><a href="getting-started.html">Getting Started</a></li><li><a href="security.html">Security</a></li><li><a href="libraries.html">Libraries</a></li><li class="active"><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>

@@ -1,0 +1,178 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container"><link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"></script><script>
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+</script><style type="text/css">body .doc pre {
+  background: f5f5f5 !important;
+  padding: 20px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: 4px solid #f1f1f1;
+  border-left: 4px solid #f1f1f1;
+  border-radius: 0;
+}
+
+body .docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+body .docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+body .docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+body .docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-9 doc"><h1>Component Life Cycle</h1><p>Macchiato encourages using the <a href='https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html'>Clean Architecture</a> style for writing web applications.</p><p>The workflows in web applications are typically driven by the client requests. Since requests will often require interaction with a resource, such as a database, we will generally have to access that resource from the route handling the request. In order to isolate the stateful code, we should have our top level functions deal with managing the side effects.</p><p>Consider a route that facilitates user authentication. The client will supply the username and the password in the request. The route will have to pull the user credentials from the database and compare these to the ones supplied by the client. Then a decision is made whether the user logged in successfully or not, and its outcome communicated back to the client.</p><p>In this workflow, the code that deals with the external resources should be localized to the namespace that provides the route and the namespace that handles the database access.</p><p>The route handler function will be responsible for calling the function that fetches the credentials from the database. The code that determines whether the password and username match represents the core business logic. This code should be pure and accept the supplied credentials along with those found in the database explicitly. This structure can be seen in the diagram below.</p><pre><code>            pure code
++----------+
+| business |
+|  logic   |
+|          |
++-----|----+
+      |
+------|---------------------
+      |     stateful code
++-----|----+   +-----------+
+|  route   |   |           |
+| handlers +---+  database |
+|          |   |           |
++----------+   +-----------+
+</code></pre><p>Keeping the business logic pure ensures that we can reason about it and test it without considering the external resources. Meanwhile, the code that deals with side effects is pushed to a thin outer layer, making it easy for us to manage.</p><h2>Managing Component Lifecycle</h2><p>The management of stateful components, such as database connections, is handled by the <a href='https://github.com/tolitius/mount'>mount</a> library. The library handles the lifecycle of such resources within the application ensuring that any such resources are started and stopped as necessary.</p><p>Macchiato encourages keeping related domain logic close together. Therefore, in cases where we have functions that reply on an external resource the management of the state for that resource should be handled in the same namespace where the functions using it are defined.</p><p>Stateful components belong to the namespace they're declared in. To create a component we need to reference the <code>mount.core/defstate</code> macro in the namespace definition and then use it as follows:</p><pre><code class="clojure">&#40;ns &lt;project-name&gt;.resource
+  &#40;:require &#91;mount.core :refer &#91;defstate&#93;&#93;&#41;&#41;
+
+&#40;defn connect &#91;&#93;
+  ;;open-a-remote-connection should return the connection instance
+  {:state :connected}&#41;
+
+&#40;defn disconnect &#91;conn&#93;
+  &#40;assoc conn :state :disconnected&#41;&#41;
+
+&#40;defstate conn
+  :start &#40;connect&#41;
+  :stop &#40;disconnect conn&#41;&#41;
+</code></pre><p>When the component is started the function bound to the <code>:start</code> key will be called. It's result will be used as the value for the state. In the example above, the <code>conn</code> will contain the map returned by the <code>connect</code> function.</p><p>When the component is shut down then the function bound to the <code>:stop</code> key is called. This function must accept the current state of the var. The function is expected to clean up any external resources before the component is shutdown.</p><p>The component dependencies are inferred from the namespace hierarchy. If namespace <code>a</code> references namespace <code>b</code> then the component specified using <code>defstate</code> in namespace <code>b</code> will be started before the one specified in namespace <code>a</code>. When the system is shutdown the <code>:stop</code> functions for each state are called in the reverse order.</p><p>For example, we may have one namespace that loads the configuration and another that used the configuration to connect to a database. This could be expressed as follows:</p><pre><code class="clojure">&#40;ns &lt;project-name&gt;.config
+  &#40;:require &#91;macchiato.env :as config&#93;
+            &#91;mount.core :refer &#91;defstate&#93;&#93;&#41;&#41;
+
+&#40;defstate env :start &#40;config/env&#41;&#41;
+</code></pre><p>The <code>&lt;project-name&gt;.config</code> namespace loads the config into the <code>env</code> state var. We can now access this config in a different namespace:</p><pre><code class="clojure">&#40;ns &lt;project-name&gt;.db
+  &#40;:require &#91;mount.core :refer &#91;defstate&#93;&#93;
+            &#91;app.config :refer &#91;env&#93;&#93;&#41;&#41;
+
+&#40;defn connect! &#91;config&#93; ...&#41;
+
+&#40;defn disconnect! &#91;conn&#93; ...&#41;
+
+&#40;defstate conn :start &#40;connect! env&#41;
+               :stop &#40;disconnect! conn&#41;&#41;
+</code></pre><p>The component hierarchy is initialized by calling <code>mount.core/start</code>. This is done in the  <code>&lt;project-name&gt;.core/app</code> function.</p><p>The states can be started selectively by explicitly providing the namespaces to be started and stopped to the <code>start</code> and <code>stop</code> functions:</p><pre><code class="clojure">&#40;mount.core/start #'&lt;project-name&gt;.config #'&lt;project-name&gt;.db&#41;
+
+&#40;mount.core/stop #'&lt;project-name&gt;.config #'&lt;project-name&gt;.db&#41;
+</code></pre><p>Alternatively, it's possible to specify the namespaces that should be omitted from the lifecycle using the <code>start-without</code> function:</p><pre><code class="clojure">&#40;start-without #'&lt;project-name&gt;.db&#41;
+</code></pre><p>Finally, the states can be replaced by alternate ones such as mock states for testing using the <code>start-with</code> function:</p><pre><code class="clojure">&#40;start-with #'&lt;project-name&gt;.db #'&lt;project-name&gt;.test.mock-db&#41;
+</code></pre><p>In the above example, the <code>&lt;project-name&gt;.db</code> will be replaced by the <code>&lt;project-name&gt;.test.mock-db</code> when the the components are loaded.</p><p>Please see the <a href='https://github.com/tolitius/mount'>official documentation</a> for further details on using mount.</p></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="overview.html">Overview</a></li><li><a href="getting-started.html">Getting Started</a></li><li><a href="security.html">Security</a></li><li><a href="libraries.html">Libraries</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li class="active"><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>

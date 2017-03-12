@@ -1,0 +1,152 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container"><link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"></script><script>
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+</script><style type="text/css">body .doc pre {
+  background: f5f5f5 !important;
+  padding: 20px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: 4px solid #f1f1f1;
+  border-left: 4px solid #f1f1f1;
+  border-radius: 0;
+}
+
+body .docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+body .docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+body .docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+body .docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-9 doc"><h1>RESTful Middleware</h1><p>Macchiato provides middleware for automatically negotiating content type for the requests and responses.</p><p>The middleware looks at the <code>Content-Type</code> header in the request to infer how the request should be deserialized, and the <code>Accept</code> header to find the appropriate serialization format for the response.</p><p>The middleware can be required as follows:</p><pre><code class="clojure">&#40;ns &lt;project-name&gt;.routes
+  &#40;:require
+   ...
+   &#91;macchiato.util.response :as r&#93;
+   &#91;macchiato.middleware.restful-format as rf&#93;&#41;&#41;
+</code></pre><p>Let's write an echo request handler function:</p><pre><code class="clojure">&#40;defn echo &#91;req res raise&#93;
+  &#40;r/ok {:message &#40;-&gt;req :body :message&#41;
+         :name &#40;-&gt; req :body :name&#41;}&#41;&#41;
+</code></pre><p>We can wrap this function with the RESTful middleware:</p><pre><code class="clojure">&#40;def routes
+  &#91;&quot;/&quot; {:get &#40;rf/wrap-restful-format echo&#41;}&#93;&#41;
+</code></pre><p>Given a request such as:</p><pre><code class="clojure">{:uri &quot;/&quot;
+ :body &quot;{\&quot;name\&quot;:&quot;\Bob\&quot;, \&quot;messsage\&quot;:\&quot;Hello\&quot;}&quot;
+ :headers {&quot;content-type&quot; &quot;application/javascript&quot;
+           &quot;accept&quot; &quot;application/javascript&quot;}}
+</code></pre><p>The middleware will parse the JSON body of the request. Our handler will receive a Clojure data structure that's been deserialized from JSON. The handler response will in turn be automatically serialized to JSON.</p><p>At this time <code>wrap-restful-format</code> supports the following types out of the box:</p><ul><li>"application/json"</li><li>"application/transit+json"</li></ul><h3>Adding Custom Types</h3><p>Custom types can be added by implementing the <code>deserialize-request</code> and <code>serialize-response</code> multimethods. See the JSON multimethods below as an example:</p><pre><code class="clojure">&#40;defmethod deserialize-request &quot;application/json&quot;
+  &#91;{:keys &#91;body keywordize?&#93;}&#93;
+  &#40;js-&gt;clj &#40;js/JSON.parse body&#41; :keywordize-keys keywordize?&#41;&#41;
+
+&#40;defmethod serialize-response &quot;application/json&quot;
+  &#91;{:keys &#91;body&#93;}&#93;
+  &#40;js/JSON.stringify &#40;clj-&gt;js body&#41;&#41;&#41;
+</code></pre><p>Once you've added the multimethods, you must provide the <code>:content-types</code> and the <code>:accept-types</code> keys when wrapping the middleware. These keys should each point to a set of content types that you wish to work with.</p></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="overview.html">Overview</a></li><li><a href="getting-started.html">Getting Started</a></li><li><a href="security.html">Security</a></li><li><a href="libraries.html">Libraries</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li class="active"><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>

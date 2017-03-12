@@ -1,0 +1,146 @@
+<html><head><link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Exo+2:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="https://fonts.googleapis.com/css?family=Open+Sans:400,100,100italic,200,200italic,300,300italic,400italic,500,900italic,500italic,600,600italic,700,700italic,800,800italic,900" rel="stylesheet" type="text/css" /><link href="/imgs/icon.png" rel="icon" type="image/x-icon" /><style type="text/css">body {
+  font-family: 'Exo 2';
+  font-size: 18px;
+  line-height: 27.0px;
+  font-weight: 300;
+}
+
+body p {
+  margin-bottom: 18px;
+}
+
+body .block {
+  margin-top: 40px;
+}
+
+body nav.navbar-default {
+  background-color: white;
+  padding-top: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+body nav.navbar {
+  margin: 0;
+}
+
+body nav.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+body nav a {
+  color: #666;
+}</style><style type="text/css">body nav.navbar {
+  border-radius: 0;
+}
+
+body nav.navbar li a {
+  color: #666;
+  border-bottom: 3px solid transparent;
+}
+
+body nav.navbar li a:hover {
+  border-color: #4cc61e;
+  color: black;
+  background: transparent;
+}
+
+body nav.navbar {
+  background: url(/imgs/bg.png) #583426;
+  margin-bottom: 40px;
+}
+
+body nav.navbar .navbar-brand {
+  color: white;
+  background-image: url(/imgs/logo.png);
+  background-size: 40px;
+  background-repeat: no-repeat;
+  padding-left: 51px;
+  background-position-y: 9px;
+}
+
+body nav.navbar li.active a {
+  border-bottom: 3px solid #4cc61e;
+}
+
+body nav.navbar li a {
+  color: white;
+}
+
+body nav.navbar li a:hover {
+  background-color: #291e1a;
+  color: white;
+}</style></head><body><nav class="navbar"><div class="container"><div class="navbar-header"><button aria-controls="navbar" aria-expanded="false" class="navbar-toggle collapsed" data-target="#navbar" data-toggle="collapse" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="/">Macchiato</a></div><div class="navbar-collapse collapsed" id="navbar"><ul class="nav navbar-nav"><li><a href="/docs/getting-started">Getting Started</a></li><li><a href="/docs/documentation">Documentation</a></li><li><a href="/api/core/index.html">API</a></li><li><a href="https://github.com/macchiato-framework"><span><i class="fa fa-github"></i> </span>Source Code</a></li></ul></div></div></nav><div class="container"><link href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/default.min.css" rel="stylesheet" /><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/clojure.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/bash.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/languages/xml.min.js"></script><script>
+window.onload = function() {
+    var aCodes = document.getElementsByTagName('pre');
+    for (var i=0; i < aCodes.length; i++) {
+        hljs.highlightBlock(aCodes[i]);
+    }
+};
+</script><style type="text/css">body .doc pre {
+  background: f5f5f5 !important;
+  padding: 20px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-right: 4px solid #f1f1f1;
+  border-left: 4px solid #f1f1f1;
+  border-radius: 0;
+}
+
+body .docs-nav li {
+  border-left: 4px solid #eee;
+}
+
+body .docs-nav li a {
+  color: #888;
+  padding: 5px 20px;
+}
+
+body .docs-nav li.active {
+  border-left: 4px solid #777;
+}
+
+body .docs-nav li.active a {
+  color: #333;
+}</style><div class="row"><div class="col-md-9 doc"><h1>Routing</h1><p><a href='https://github.com/juxt/bidi'>Bidi</a> is used as the default routing library. However, you can easily swap for a number of other libraries, such as <a href='https://github.com/darkleaf/router'>router</a>.</p><p>The routing logic is found in the <code>&lt;project-name&gt;.routes</code> namespace. The <code>router</code> function is responsible for selecting the handler for the route based on the URI:</p><pre><code class="clojure">&#40;defn router &#91;req res raise&#93;
+  &#40;if-let &#91;{:keys &#91;handler route-params&#93;} &#40;bidi/match-route&#42; routes &#40;:uri req&#41; req&#41;&#93;
+    &#40;handler &#40;assoc req :route-params route-params&#41; res raise&#41;
+    &#40;not-found req res raise&#41;&#41;&#41;
+</code></pre><p>The <code>router</code> will attempt to match the URI using <code>bidi/match-route&#42;</code> function against the routes:</p><pre><code class="clojure">
+&#40;def routes
+  &#91;&quot;/&quot; {:get home}&#93;&#41;
+</code></pre><p>When no routes are found, then the <code>not-found</code> route will be called:</p><pre><code class="clojure">&#40;defn not-found &#91;req res raise&#93;
+  &#40;-&gt; &#40;html
+        &#91;:html
+         &#91;:body
+          &#91;:h2 &#40;:uri req&#41; &quot; was not found&quot;&#93;&#93;&#93;&#41;
+      &#40;r/not-found&#41;
+      &#40;r/content-type &quot;text/html&quot;&#41;
+      &#40;res&#41;&#41;&#41;
+</code></pre><p>A route handler function must accept three arguments as seen above:</p><ul><li>req - the request map containing the parsed request</li><li>res - a function that will handle sending the response to the server asynchronously</li><li>raise - a function that should be called when you wish to propagate the error to the default error handler</li></ul></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li><a href="overview.html">Overview</a></li><li><a href="getting-started.html">Getting Started</a></li><li><a href="security.html">Security</a></li><li><a href="libraries.html">Libraries</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li class="active"><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+  padding-bottom: 54px;
+  height: 360px;
+  margin-right: 0px;
+  text-align: center;
+  margin-top: 180px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  background-color: #666;
+  padding-right: 0px;
+  color: white;
+  padding-left: 0px;
+  padding-top: 54px;
+}
+
+#footer img {
+  height: 60px;
+}
+
+#footer .footer-container {
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+#footer p {
+  font-size: 18px;
+}</style><div class="footer-container"><h2><img class="logo" src="/imgs/logo.png" />Macchiato</h2><h4>ClojureScript arrives on server</h4></div></div></body></html>
