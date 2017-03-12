@@ -184,7 +184,7 @@ window.onload = function() {
      [:ul.nav
       (for [[bn f] (sort-by (fn [[k v]] (:page-index v)) (:files data))]
         [:li {:class (when (str/ends-with? uri bn) "active")}
-         [:a {:href bn } (or (:title f) bn)]])]]
+         [:a {:href (str bn ".html") } (or (:title f) bn)]])]]
     ]])
 
 (def meta-start-regex  #"^---")
