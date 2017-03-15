@@ -1,6 +1,6 @@
-(defproject fhirbase-static "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject macchiato-docs-static "0.1.0-SNAPSHOT"
+  :description "Macchiato framework documentation"
+  :url "https://github.com/macchiato-framework/macchiato-framework.github.io"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :source-paths  ["src" "vendor/esthatic/src"]
