@@ -12,13 +12,13 @@ menu:
   -   href: https://github.com/macchiato-framework
       icon: github
       text: Source Code
-      
+
 features:
 - id: docs
   title: From Clojure?
   img: clj.png
   text: >
-    The goal for Macchiato is to provide a way to build Node web applications using CojureScript.
+    The goal for Macchiato is to provide a way to build Node web applications using ClojureScript.
     Startup time, memory footprint .... TODO
 
 - id: github
@@ -26,4 +26,3 @@ features:
   img: node.png
   text: >
     Use well-designed language & libraries on top of your runtime
-
