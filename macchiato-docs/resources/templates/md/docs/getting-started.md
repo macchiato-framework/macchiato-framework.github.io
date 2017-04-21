@@ -265,7 +265,7 @@ As you can see the project structure is relatively straightforward:
 * the `src` folder contains the application source code
 * the `test` folder contains test code and test assets
 * the `public` folder contains any static assets for the application
-* the `projct.clj` file is used to manage the build configuration
+* the `project.clj` file is used to manage the build configuration
 
 ## Developing the Application
 
