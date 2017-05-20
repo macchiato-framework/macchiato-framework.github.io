@@ -29,7 +29,7 @@ The above will create a new template project.
 ~ $ lein build
 ```
 
-This will start the Figwheel compiler for ClojureScript. Once the sources are compiler, open a new terminal window and
+This will start the Figwheel compiler for ClojureScript. Once the sources are compiled, open a new terminal window and
 run the project with Node.js as follows:
 
 ```
@@ -126,7 +126,7 @@ The `app.cljs` file is the entry point for the application. The dev version of t
 (set! *main-cli-fn* core/app)
 ```
 
-You can see that this namespace sets environment properties such as the Mount configuration, printing, and error handling.
+You can see that this namespace sets environment properties such as the [Mount](https://github.com/tolitius/mount) configuration, printing, and error handling.
 Finally, it sets the `core/app` function as the main function to be run by Node.js.
 
 The production version of this namespace looks a little different:
@@ -248,7 +248,7 @@ In order to use a new library in our project we simply have to add its dependenc
 
 NPM dependencies are managed under the `:npm` key, this is where you can add modules from [npmjs.com](https://npmjs.com).
 
-The items in the `:plugins` vector can be used to provide additional functionality such as reading environment variables via `lein-cprop` plugin.
+The items in the `:plugins` vector can be used to provide additional functionality such as reading environment variables via the `lein-cprop` plugin.
 
 The `:profiles` contain a map of different project configurations that are used to initialize it for either development or production builds.
 
@@ -349,7 +349,7 @@ entered by the users. First, we'll need to update the namespace declaration as f
     [hiccups.core :refer [html]]))
 ```
 
-We've added a reference to the `db` namespace we created earlier, and the `anit-forgery` namespace. We'll need the latter
+We've added a reference to the `db` namespace we created earlier, and the `anti-forgery` namespace. We'll need the latter
 to create a CSRF anti-forgery token in our form.
 
 Next, we'll create an instance of the `synchronize` modile:
@@ -395,8 +395,8 @@ We can now update the `home` route as follows:
          (res)))))
 ```
 
-If you'll recall, the `messages` in the `guestbook.db` namespace uses `sync.defer` and `sync.awat` calls to handle the
-asynchronous call to the databse. These must be executed inside a `sync.fiber` call, and we'll have to add one in our route
+If you'll recall, the `messages` in the `guestbook.db` namespace uses `sync.defer` and `sync.await` calls to handle the
+asynchronous call to the database. These must be executed inside a `sync.fiber` call, and we'll have to add one in our route
 handler function.
 
 The rest of the code in the function generates the HTML content for the page. We call `db/messages` to retrieve the currently
