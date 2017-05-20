@@ -5,7 +5,7 @@
 
 # Environment Variables
 
-The configuration is represented by a map. the map is constructed by aggregating variables from
+The configuration is represented by a map. The map is constructed by aggregating variables from
 multiple sources in the environment. The default sources include EDN configuration and shell variables.
 
 ### EDN Based Configuration
@@ -51,6 +51,6 @@ Next, the library will look for the `conf` environment variable. When present, i
 
 When the `conf` environment variable is not present, the library will look for a file called `config.edn` at the location where the app was run.
 
-When a configuration file is found, it will be deep merged on top of the configuration read from the envrionment.
+When a configuration file is found, it will be deep merged on top of the configuration read from the environment.
 
 
