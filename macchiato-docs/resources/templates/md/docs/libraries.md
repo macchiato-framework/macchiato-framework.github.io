@@ -1,5 +1,9 @@
 ## Useful Libraries
 
+### Middleware
+
+* [macchiato-core-async](https://github.com/theasp/macchiato-core-async)
+
 ### routing
 
 * [router](https://github.com/darkleaf/router)
