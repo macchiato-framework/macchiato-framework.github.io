@@ -30,7 +30,7 @@ The above will create a new template project.
 ~ $ lein build
 ```
 
-This will start the Figwheel compiler for ClojureScript. Once the sources are compiler, open a new terminal window and
+This will start the Figwheel compiler for ClojureScript. Once the sources are compiled, open a new terminal window and
 run the project with Node.js as follows:
 
 ```
