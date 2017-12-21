@@ -18,8 +18,7 @@ features:
   title: From Clojure?
   img: clj.png
   text: >
-    The goal for Macchiato is to provide a way to build Node web applications using ClojureScript.
-    Startup time, memory footprint .... TODO
+    he goal for Macchiato is to provide a way to use ClojureScript to build Node web applications with minimal additional overhead.
 
 - id: github
   title: From NodeJS?
