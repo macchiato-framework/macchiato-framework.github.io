@@ -44,11 +44,6 @@ Once the server starts, you can visit your site at `localhost:3000`.
 The newly created application has the following structure:
 
 ```
-├── .gitignore
-├── LICENSE
-├── Procfile
-├── project.clj
-├── README.md
 ├── env
 │   ├── dev
 │   │   ├── guestbook
@@ -61,28 +56,37 @@ The newly created application has the following structure:
 │       └── guestbook
 │           └── app.cljs
 ├── public
-│   ├── css
-│   │   └── site.css
-│   └── index.html
+│   └── css
+│       └── site.css
 ├── src
 │   └── guestbook
 │       ├── config.cljs
 │       ├── core.cljs
 │       ├── middleware.cljs
 │       └── routes.cljs
-├── system.properties
-└── test
-    └── guestbook
-        └── core_test.cljs
+├── test
+│   └── guestbook
+│       └── core_test.cljs
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── LICENSE
+├── Procfile
+├── project.clj
+├── README.md
+└── system.properties
 ```
 
 Let's take a look at what the files in the root folder of the application do:
 
-* `Procfile` - used to facilitate Heroku deployments
-* `LICENSE` - a license file for the project
-* `README.md` - where documentation for the application is conventionally put
-* `project.clj` - used to manage the project configuration and dependencies by Leiningen
+* `Dockerfile` - used to containerize the application
+* `.dockerignore` - a list of assets, such as build generated files, to exclude from Docker
 * `.gitignore` - a list of assets, such as build generated files, to exclude from Git
+* `LICENSE` - a license file for the project
+* `Procfile` - used to facilitate Heroku deployments
+* `project.clj` - used to manage the project configuration and dependencies by Leiningen
+* `README.md` - where documentation for the application is conventionally put
+* `system.properties` - a collection of system metadata
 
 ### The Public Directory
 
@@ -114,7 +118,7 @@ The `app.cljs` file is the entry point for the application. The dev version of t
  (ns ^:figwheel-always guestbook.app
   (:require
     [guestbook.core :as core]
-    [cljs.nodejs]
+    [cljs.nodejs :as node]
     [mount.core :as mount]))
 
 (mount/in-cljc-mode)
@@ -123,7 +127,7 @@ The `app.cljs` file is the entry point for the application. The dev version of t
 
 (.on js/process "uncaughtException" #(js/console.error %))
 
-(set! *main-cli-fn* core/app)
+(set! *main-cli-fn* core/server)
 ```
 
 You can see that this namespace sets environment properties such as the Mount configuration, printing, and error handling.
@@ -142,7 +146,7 @@ The production version of this namespace looks a little different:
 
 (cljs.nodejs/enable-util-print!)
 
-(set! *main-cli-fn* core/main)
+(set! *main-cli-fn* core/server)
 ```
 
 We're no longer using Figwheel, and we don't have a global exception handler here.
@@ -160,30 +164,34 @@ The project file of the application we've created is found in its root folder an
 (defproject guestbook "0.1.0-SNAPSHOT"
   :description "FIXME: write this!"
   :url "http://example.com/FIXME"
-  :dependencies [[bidi "2.0.14"]
-                 [com.cemerick/piggieback "0.2.1"]
-                 [com.taoensso/timbre "4.7.4"]
-                 [hiccups "0.3.0"]
-                 [macchiato/core "0.1.2"]
-                 [macchiato/env "0.0.5"]
-                 [mount "0.1.10"]
-                 [org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.293"]]
+  :dependencies [[bidi "2.1.2"]
+                 [com.cemerick/piggieback "0.2.2"]
+                 [com.taoensso/timbre "4.10.0"]
+                 [macchiato/hiccups "0.4.1"]
+                 [macchiato/core "0.2.7"]
+                 [macchiato/env "0.0.6"]
+                 [mount "0.1.11"]
+                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.9.946"]
+                 ;; needed for JDK 9 compatibility
+                 [javax.xml.bind/jaxb-api "2.3.0"]]
+  :min-lein-version "2.0.0"
   :jvm-opts ^:replace ["-Xmx1g" "-server"]
   :plugins [[lein-doo "0.1.7"]
-            [lein-npm "0.6.2"]
-            [lein-figwheel "0.5.8"]
-            [lein-cljsbuild "1.1.4"]
-  [org.clojure/clojurescript "1.9.293"]]
-  :npm {:dependencies [[source-map-support "0.4.6"]
-                       [sqlite3 "3.1.8"]
-                       [synchronize "2.0.0"]]}
+            [macchiato/lein-npm "0.6.4"]
+            [lein-figwheel "0.5.14"]
+            [lein-cljsbuild "1.1.5"]]
+  :npm {:dependencies [[source-map-support "0.4.6"]]
+        :write-package-json true}
   :source-paths ["src" "target/classes"]
   :clean-targets ["target"]
   :target-path "target"
   :profiles
   {:dev
-   {:cljsbuild
+   {:npm {:package {:main "target/out/guestbook.js"
+                    :scripts {:start "node target/out/guestbook.js"}}}
+    :dependencies [[figwheel-sidecar "0.5.14"]]
+    :cljsbuild
     {:builds {:dev
               {:source-paths ["env/dev" "src"]
                :figwheel     true
@@ -200,7 +208,6 @@ The project file of the application we've created is found in its root folder an
      :nrepl-port 7000
      :reload-clj-files {:clj false :cljc true}
      :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-
     :source-paths ["env/dev"]
     :repl-options {:init-ns user}}
    :test
@@ -209,19 +216,22 @@ The project file of the application we've created is found in its root folder an
      {:test
       {:source-paths ["env/test" "src" "test"]
        :compiler     {:main guestbook.app
-                            :output-to     "target/test/guestbook.js"
-                            :target        :nodejs
-                            :optimizations :none
-                            :source-map    true
-                            :pretty-print  true}}}}
+                      :output-to     "target/test/guestbook.js"
+                      :target        :nodejs
+                      :optimizations :none
+                      :pretty-print  true
+                      :source-map    true}}}}
     :doo {:build "test"}}
    :release
-   {:cljsbuild
+   {:npm {:package {:main "target/release/guestbook.js"
+                    :scripts {:start "node target/release/guestbook.js"}}}
+    :cljsbuild
     {:builds
      {:release
       {:source-paths ["env/prod" "src"]
        :compiler     {:main          guestbook.app
                       :output-to     "target/release/guestbook.js"
+                      :language-in   :ecmascript5
                       :target        :nodejs
                       :optimizations :simple
                       :pretty-print  false}}}}}}
@@ -233,7 +243,7 @@ The project file of the application we've created is found in its root folder an
    "package" ["do"
               ["clean"]
               ["npm" "install"]
-              ["npm" "init" "-y"]
+              ["with-profile" "release" "npm" "init" "-y"]
               ["with-profile" "release" "cljsbuild" "once"]]
    "test" ["do"
            ["npm" "install"]
@@ -265,7 +275,7 @@ As you can see the project structure is relatively straightforward:
 * the `src` folder contains the application source code
 * the `test` folder contains test code and test assets
 * the `public` folder contains any static assets for the application
-* the `projct.clj` file is used to manage the build configuration
+* the `project.clj` file is used to manage the build configuration
 
 ## Developing the Application
 
@@ -276,7 +286,6 @@ We'll start by adding a SQLite database to the application. Let's open the `proj
 ```clojure
 :npm {:dependencies [[source-map-support "0.4.6"]
                      [sqlite3 "3.1.8"] ;; <-- SQLite NPM module
-                     [synchronize "2.0.0"] ;; <-- NPM fibers module
                      ]}
 ```
 
@@ -291,11 +300,9 @@ Next, let's add a new namespace file called `src/guestbook/db.cljs`. We'll start
     [mount.core :refer [defstate]]))
 ```
 
-With that in place, we can define vars for the synchronize and sqlite3 libraries:
+With that in place, we can define a var for the sqlite3 library:
 
 ```clojure
-(def sync (node/require "synchronize"))
-
 (def sqlite3 (node/require "sqlite3"))
 ```
 
@@ -305,12 +312,12 @@ We can now use Mount `defstate` to create the database resource:
 (defstate db
   :start (let [db (sqlite3.Database. ":memory:")]
            (.run
-             db
-             "CREATE TABLE guestbook
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          name VARCHAR(30),
-                          message VARCHAR(200),
-                          time TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
+            db
+            "CREATE TABLE guestbook
+              (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name VARCHAR(30),
+                  message VARCHAR(200),
+                  time TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
   :stop (.close @db))
 ```
 
@@ -321,15 +328,9 @@ add messages to the guestbook and read the saved messages from it:
 (defn add-message [{:keys [name message]}]
   (.run @db "INSERT INTO guestbook (name, message) VALUES (?, ?)" #js [name message]))
 
-(defn messages []
-  (-> @db
-      (.all "SELECT * FROM guestbook" (sync.defer))
-      (sync.await)
-      (js->clj :keywordize-keys true)))
+(defn messages [handler]
+  (.all @db "SELECT * FROM guestbook" handler))
 ```
-
-Notice that we're using `sync.defer` and `sync.await` from the synchronize library we included to select the messages from the database.
-This is necessary because the `all` method for the database driver is async and expects a callback.
 
 ### Updating Routes
 
@@ -339,65 +340,61 @@ entered by the users. First, we'll need to update the namespace declaration as f
 ```clojure
 (ns guestbook.routes
   (:require
-    [bidi.bidi :as bidi]
-    [hiccups.runtime]
-    [guestbook.db :as db]
-    [macchiato.middleware.anti-forgery :as af]
-    [macchiato.util.response :as r]
-    [cljs.nodejs :as node])
+   [bidi.bidi :as bidi]
+   [hiccups.runtime]
+   [guestbook.db :as db]
+   [macchiato.middleware.anti-forgery :as af]
+   [macchiato.util.response :as r]
+   [macchiato.middleware.restful-format :as restful-format]
+   [cljs.nodejs :as node])
   (:require-macros
-    [hiccups.core :refer [html]]))
+   [hiccups.core :refer [html]]))
 ```
 
 We've added a reference to the `db` namespace we created earlier, and the `anit-forgery` namespace. We'll need the latter
 to create a CSRF anti-forgery token in our form.
 
-Next, we'll create an instance of the `synchronize` modile:
-
-```clojure
-(def sync (node/require "synchronize"))
-```
-
 We can now update the `home` route as follows:
 
 ```clojure
 (defn home [req res raise]
-  (sync.fiber
-    #(let [af-token af/*anti-forgery-token*]
-       (->
-         [:html
-          [:body
-           [:h2 "Messages"]
-           [:ul
-            (for [{:keys [name message time]} (db/messages)]
-              [:li name " says " message " at " time])]
-           [:hr]
-           [:h2 "leave a message"]
-           [:form {:method "POST" :action "/message"}
-            [:input
-             {:type        :text
-              :name        "name"
-              :placeholder "name"}]
-            [:input
-             {:type  "hidden"
-              :name  "__anti-forgery-token"
-              :value af-token}]
-            [:input
-             {:type        :text
-              :name        "message"
-              :placeholder "message"}]
-            [:input
-             {:type  :submit
-              :value "add message"}]]]]
-         (html)
-         (r/ok)
-         (r/content-type "text/html")
-         (res)))))
+  (let [af-token af/*anti-forgery-token*]
+    (db/messages
+     (fn [err result]
+       (println "+++++ GOT RESULT +++++")
+       (js/console.log result)
+       (if err
+         (raise err)
+         (->
+          [:html
+           [:body
+            [:h2 "Messages"]
+            [:ul
+             (for [{:keys [name message time]} (js->clj result :keywordize-keys true)]
+               [:li name " says " message " at " time])]
+            [:hr]
+            [:h2 "leave a message"]
+            [:form {:method "POST" :action "/message"}
+             [:input
+              {:type :text
+               :name "name"
+               :placeholder "name"}]
+             [:input
+              {:type "hidden"
+               :name "__anti-forgery-token"
+               :value af-token}]
+             [:input
+              {:type :text
+               :name "message"
+               :placeholder "message"}]
+             [:input
+              {:type :submit
+               :value "add message"}]]]]
+          (html)
+          (r/ok)
+          (r/content-type "text/html")
+          (res)))))))
 ```
-
-If you'll recall, the `messages` in the `guestbook.db` namespace uses `sync.defer` and `sync.awat` calls to handle the
-asynchronous call to the databse. These must be executed inside a `sync.fiber` call, and we'll have to add one in our route
-handler function.
 
 The rest of the code in the function generates the HTML content for the page. We call `db/messages` to retrieve the currently
 stored messages and display them. Then we add a form that will allow the users to post a new message to the `/message` route.
@@ -441,28 +438,27 @@ following configuration to the terminal:
   "version": "0.1.0-SNAPSHOT",
   "dependencies": {
     "random-bytes": "1.0.0",
-    "multiparty": "4.1.2",
+    "multiparty": "4.1.3",
     "source-map-support": "0.4.6",
-    "ws": "1.1.1",
+    "ws": "3.3.3",
     "sqlite3": "3.1.8",
-    "cookies": "0.6.2",
-    "etag": "1.7.0",
-    "synchronize": "2.0.0",
-    "qs": "6.3.0",
-    "content-type": "1.0.2",
+    "cookies": "0.7.1",
+    "etag": "1.8.1",
+    "lru": "3.1.0",
+    "qs": "6.5.1",
+    "content-type": "1.0.4",
     "url": "0.11.0",
-    "simple-encryptor": "1.1.0",
-    "accepts": "1.3.3",
-    "concat-stream": "1.5.2"
+    "simple-encryptor": "1.1.1",
+    "concat-stream": "1.6.0"
   },
-  "main": "index.js",
+  "main": "target/release/guestbook.js",
+  "scripts": {
+    "start": "node target/release/guestbook.js"
+  },
   "directories": {
     "test": "test"
   },
   "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC"
