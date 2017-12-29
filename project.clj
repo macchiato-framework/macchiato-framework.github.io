@@ -1,4 +1,4 @@
-(defproject macchiato-docs-static "0.1.0-SNAPSHOT"
+(defproject macchiato-docs-static "0.1.0"
   :description "Macchiato framework documentation"
   :url "https://github.com/macchiato-framework/macchiato-framework.github.io"
   :license {:name "Eclipse Public License"
