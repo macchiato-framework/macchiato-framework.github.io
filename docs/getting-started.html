@@ -101,7 +101,264 @@ body .docs-nav li.active {
 
 body .docs-nav li.active a {
   color: #333;
-}</style><div class="row"><div class="col-md-9 doc"><h1></h1></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li class="active"><a href="getting-started.html">getting-started</a></li><li><a href="overview.html">Overview</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="security-access.html">Security</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li><li><a href="libraries.html">Libraries</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
+}</style><div class="row"><div class="col-md-9 doc"><h1></h1><p>This tutorial will guide you through building a simple guestbook application using Macchiato. The guestbook allows users to leave a message and to view a list of messages left by others. The application will demonstrate the basics of HTML templating, database access, and project architecture.</p><h3>Requirements</h3><p>You'll need the following prerequisites to get started:</p><ul><li><a href='http://www.azul.com/downloads/zulu/'>JDK</a></li><li><a href='http://leiningen.org/'>Leiningen</a></li><li><a href='https://nodejs.org/'>Node.js</a></li></ul><h2>Creating a new application</h2><p>Once you have Leiningen installed you can run the following commands in your terminal to initialize your application:</p><pre><code>&#126; $ lein new macchiato guestbook
+&#126; $ cd guestbook
+</code></pre><p>The above will create a new template project.</p><pre><code>&#126; $ lein build
+</code></pre><p>This will start the Figwheel compiler for ClojureScript. Once the sources are compiler, open a new terminal window and run the project with Node.js as follows:</p><pre><code>&#126; $ cd guestbook
+&#126; $ node target/out/guestbook.js
+</code></pre><p>Once the server starts, you can visit your site at <code>localhost:3000</code>.</p><h3>Anatomy of a Macchiato application</h3><p>The newly created application has the following structure:</p><pre><code>├── env
+│   ├── dev
+│   │   ├── guestbook
+│   │   │   └── app.cljs
+│   │   └── user.clj
+│   ├── prod
+│   │   └── guestbook
+│   │       └── app.cljs
+│   └── test
+│       └── guestbook
+│           └── app.cljs
+├── public
+│   └── css
+│       └── site.css
+├── src
+│   └── guestbook
+│       ├── config.cljs
+│       ├── core.cljs
+│       ├── middleware.cljs
+│       └── routes.cljs
+├── test
+│   └── guestbook
+│       └── core&#95;test.cljs
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── LICENSE
+├── Procfile
+├── project.clj
+├── README.md
+└── system.properties
+</code></pre><p>Let's take a look at what the files in the root folder of the application do:</p><ul><li><code>Dockerfile</code> - used to containerize the application</li><li><code>.dockerignore</code> - a list of assets, such as build generated files, to exclude from Docker</li><li><code>.gitignore</code> - a list of assets, such as build generated files, to exclude from Git</li><li><code>LICENSE</code> - a license file for the project</li><li><code>Procfile</code> - used to facilitate Heroku deployments</li><li><code>project.clj</code> - used to manage the project configuration and dependencies by Leiningen</li><li><code>README.md</code> - where documentation for the application is conventionally put</li><li><code>system.properties</code> - a collection of system metadata</li></ul><h3>The Public Directory</h3><p>This directory contains any public assets for the applications that will be served by the HTTP server.</p><h3>The Source Directory</h3><p>All our code lives under the <code>src</code> folder. Since our application is called guestbook, this is the root namespace for the project. Let's take a look at all the namespaces that have been created for us.</p><h4>guestbook</h4><ul><li><code>core.clj</code> - this is the entry point for the application that contains the logic for starting and stopping the server</li><li><code>config.clj</code> - defines the configuration for the application based on the environment variables</li><li><code>routes.clj</code> - defines the HTTP routes for the application</li><li><code>middleware.clj</code> - a namespace that contains the common middleware for the HTTP routes</li></ul><h3>The Env Directory</h3><p>Environment specific code and resources are located under the <code>env/dev</code>, <code>env/test</code>, and the <code>env/prod</code> paths. The <code>dev</code> configuration will be used during development, <code>test</code> during testing, while the <code>prod</code> configuration will be used when the application is packaged for production.</p><p>The <code>user</code> namespace in the <code>env/dev</code> folder is used for starting the ClojureScript REPL.</p><p>The <code>app.cljs</code> file is the entry point for the application. The dev version of this file looks as follows:</p><pre><code class="clojure"> &#40;ns &#94;:figwheel-always guestbook.app
+  &#40;:require
+    &#91;guestbook.core :as core&#93;
+    &#91;cljs.nodejs :as node&#93;
+    &#91;mount.core :as mount&#93;&#41;&#41;
+
+&#40;mount/in-cljc-mode&#41;
+
+&#40;cljs.nodejs/enable-util-print!&#41;
+
+&#40;.on js/process &quot;uncaughtException&quot; #&#40;js/console.error %&#41;&#41;
+
+&#40;set! &#42;main-cli-fn&#42; core/server&#41;
+</code></pre><p>You can see that this namespace sets environment properties such as the Mount configuration, printing, and error handling. Finally, it sets the <code>core/app</code> function as the main function to be run by Node.js.</p><p>The production version of this namespace looks a little different:</p><pre><code class="clojure"> &#40;ns guestbook.app
+  &#40;:require
+    &#91;guestbook.core :as core&#93;
+    &#91;cljs.nodejs&#93;
+    &#91;mount.core :as mount&#93;&#41;&#41;
+
+&#40;mount/in-cljc-mode&#41;
+
+&#40;cljs.nodejs/enable-util-print!&#41;
+
+&#40;set! &#42;main-cli-fn&#42; core/server&#41;
+</code></pre><p>We're no longer using Figwheel, and we don't have a global exception handler here.</p><h3>The Test Directory</h3><p>Here is where we put tests for our application, a couple of sample tests have already been defined for us.</p><h3>The Project File</h3><p>As was noted above, all the dependencies are managed via updating the <code>project.clj</code> file. The project file of the application we've created is found in its root folder and should look as follows:</p><pre><code>&#40;defproject guestbook &quot;0.1.0-SNAPSHOT&quot;
+  :description &quot;FIXME: write this!&quot;
+  :url &quot;http://example.com/FIXME&quot;
+  :dependencies &#91;&#91;bidi &quot;2.1.2&quot;&#93;
+                 &#91;com.cemerick/piggieback &quot;0.2.2&quot;&#93;
+                 &#91;com.taoensso/timbre &quot;4.10.0&quot;&#93;
+                 &#91;macchiato/hiccups &quot;0.4.1&quot;&#93;
+                 &#91;macchiato/core &quot;0.2.7&quot;&#93;
+                 &#91;macchiato/env &quot;0.0.6&quot;&#93;
+                 &#91;mount &quot;0.1.11&quot;&#93;
+                 &#91;org.clojure/clojure &quot;1.9.0&quot;&#93;
+                 &#91;org.clojure/clojurescript &quot;1.9.946&quot;&#93;
+                 ;; needed for JDK 9 compatibility
+                 &#91;javax.xml.bind/jaxb-api &quot;2.3.0&quot;&#93;&#93;
+  :min-lein-version &quot;2.0.0&quot;
+  :jvm-opts &#94;:replace &#91;&quot;-Xmx1g&quot; &quot;-server&quot;&#93;
+  :plugins &#91;&#91;lein-doo &quot;0.1.7&quot;&#93;
+            &#91;macchiato/lein-npm &quot;0.6.4&quot;&#93;
+            &#91;lein-figwheel &quot;0.5.14&quot;&#93;
+            &#91;lein-cljsbuild &quot;1.1.5&quot;&#93;&#93;
+  :npm {:dependencies &#91;&#91;source-map-support &quot;0.4.6&quot;&#93;&#93;
+        :write-package-json true}
+  :source-paths &#91;&quot;src&quot; &quot;target/classes&quot;&#93;
+  :clean-targets &#91;&quot;target&quot;&#93;
+  :target-path &quot;target&quot;
+  :profiles
+  {:dev
+   {:npm {:package {:main &quot;target/out/guestbook.js&quot;
+                    :scripts {:start &quot;node target/out/guestbook.js&quot;}}}
+    :dependencies &#91;&#91;figwheel-sidecar &quot;0.5.14&quot;&#93;&#93;
+    :cljsbuild
+    {:builds {:dev
+              {:source-paths &#91;&quot;env/dev&quot; &quot;src&quot;&#93;
+               :figwheel     true
+               :compiler     {:main          guestbook.app
+                              :output-to     &quot;target/out/guestbook.js&quot;
+                              :output-dir    &quot;target/out&quot;
+                              :target        :nodejs
+                              :optimizations :none
+                              :pretty-print  true
+                              :source-map    true
+                              :source-map-timestamp false}}}}
+    :figwheel
+    {:http-server-root &quot;public&quot;
+     :nrepl-port 7000
+     :reload-clj-files {:clj false :cljc true}
+     :nrepl-middleware &#91;cemerick.piggieback/wrap-cljs-repl&#93;}
+    :source-paths &#91;&quot;env/dev&quot;&#93;
+    :repl-options {:init-ns user}}
+   :test
+   {:cljsbuild
+    {:builds
+     {:test
+      {:source-paths &#91;&quot;env/test&quot; &quot;src&quot; &quot;test&quot;&#93;
+       :compiler     {:main guestbook.app
+                      :output-to     &quot;target/test/guestbook.js&quot;
+                      :target        :nodejs
+                      :optimizations :none
+                      :pretty-print  true
+                      :source-map    true}}}}
+    :doo {:build &quot;test&quot;}}
+   :release
+   {:npm {:package {:main &quot;target/release/guestbook.js&quot;
+                    :scripts {:start &quot;node target/release/guestbook.js&quot;}}}
+    :cljsbuild
+    {:builds
+     {:release
+      {:source-paths &#91;&quot;env/prod&quot; &quot;src&quot;&#93;
+       :compiler     {:main          guestbook.app
+                      :output-to     &quot;target/release/guestbook.js&quot;
+                      :language-in   :ecmascript5
+                      :target        :nodejs
+                      :optimizations :simple
+                      :pretty-print  false}}}}}}
+  :aliases
+  {&quot;build&quot; &#91;&quot;do&quot;
+            &#91;&quot;clean&quot;&#93;
+            &#91;&quot;npm&quot; &quot;install&quot;&#93;
+            &#91;&quot;figwheel&quot; &quot;dev&quot;&#93;&#93;
+   &quot;package&quot; &#91;&quot;do&quot;
+              &#91;&quot;clean&quot;&#93;
+              &#91;&quot;npm&quot; &quot;install&quot;&#93;
+              &#91;&quot;with-profile&quot; &quot;release&quot; &quot;npm&quot; &quot;init&quot; &quot;-y&quot;&#93;
+              &#91;&quot;with-profile&quot; &quot;release&quot; &quot;cljsbuild&quot; &quot;once&quot;&#93;&#93;
+   &quot;test&quot; &#91;&quot;do&quot;
+           &#91;&quot;npm&quot; &quot;install&quot;&#93;
+           &#91;&quot;with-profile&quot; &quot;test&quot; &quot;doo&quot; &quot;node&quot;&#93;&#93;}&#41;
+</code></pre><p>As you can see the <code>project.clj</code> file is simply a Clojure list containing key/value pairs describing different aspects of the application.</p><p>The most common task is adding new libraries to the project. These libraries are specified using the <code>:dependencies</code> vector. In order to use a new library in our project we simply have to add its dependency here.</p><p>NPM dependencies are managed under the <code>:npm</code> key, this is where you can add modules from <a href='https://npmjs.com'>npmjs.com</a>.</p><p>The items in the <code>:plugins</code> vector can be used to provide additional functionality such as reading environment variables via <code>lein-cprop</code> plugin.</p><p>The <code>:profiles</code> contain a map of different project configurations that are used to initialize it for either development or production builds.</p><p>The <code>:cljsbuild</code> key under the profiles controls the compiler options for ClojureScript.</p><p>The <code>:aliases</code> key points to composite tasks needed for building, testing, and packaging the application for production.</p><h3>Project Anatomy Summary</h3><p>As you can see the project structure is relatively straightforward:</p><ul><li>the <code>env</code> folder contains profile specific source code</li><li>the <code>src</code> folder contains the application source code</li><li>the <code>test</code> folder contains test code and test assets</li><li>the <code>public</code> folder contains any static assets for the application</li><li>the <code>project.clj</code> file is used to manage the build configuration</li></ul><h2>Developing the Application</h2><h3>Creating the Database</h3><p>We'll start by adding a SQLite database to the application. Let's open the <code>project.clj</code> file and add the following NPM dependencies:</p><pre><code class="clojure">:npm {:dependencies &#91;&#91;source-map-support &quot;0.4.6&quot;&#93;
+                     &#91;sqlite3 &quot;3.1.8&quot;&#93; ;; &lt;-- SQLite NPM module
+                     &#93;}
+</code></pre><p>If you have <code>lein build</code> running, then you'll need to restart it in order to load the new dependency.</p><p>Next, let's add a new namespace file called <code>src/guestbook/db.cljs</code>. We'll start by adding the following namespace declaration:</p><pre><code class="clojure">&#40;ns guestbook.db
+  &#40;:require
+    &#91;cljs.nodejs :as node&#93;
+    &#91;mount.core :refer &#91;defstate&#93;&#93;&#41;&#41;
+</code></pre><p>With that in place, we can define a var for the sqlite3 library:</p><pre><code class="clojure">&#40;def sqlite3 &#40;node/require &quot;sqlite3&quot;&#41;&#41;
+</code></pre><p>We can now use Mount <code>defstate</code> to create the database resource:</p><pre><code class="clojure">&#40;defstate db
+  :start &#40;let &#91;db &#40;sqlite3.Database. &quot;:memory:&quot;&#41;&#93;
+           &#40;.run
+            db
+            &quot;CREATE TABLE guestbook
+              &#40;id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name VARCHAR&#40;30&#41;,
+                  message VARCHAR&#40;200&#41;,
+                  time TIMESTAMP DEFAULT CURRENT&#95;TIMESTAMP&#41;;&quot;&#41;&#41;
+  :stop &#40;.close @db&#41;&#41;
+</code></pre><p>The state will initialize an in-memory database when it starts, and close it when it stops. Let's add the functions to add messages to the guestbook and read the saved messages from it:</p><pre><code class="clojure">&#40;defn add-message &#91;{:keys &#91;name message&#93;}&#93;
+  &#40;.run @db &quot;INSERT INTO guestbook &#40;name, message&#41; VALUES &#40;?, ?&#41;&quot; #js &#91;name message&#93;&#41;&#41;
+
+&#40;defn messages &#91;handler&#93;
+  &#40;.all @db &quot;SELECT &#42; FROM guestbook&quot; handler&#41;&#41;
+</code></pre><h3>Updating Routes</h3><p>Let's navigate to the <code>guestbook.routes</code> namespace to add the code for displaying the message form and saving the messages entered by the users. First, we'll need to update the namespace declaration as follows:</p><pre><code class="clojure">&#40;ns guestbook.routes
+  &#40;:require
+   &#91;bidi.bidi :as bidi&#93;
+   &#91;hiccups.runtime&#93;
+   &#91;guestbook.db :as db&#93;
+   &#91;macchiato.middleware.anti-forgery :as af&#93;
+   &#91;macchiato.util.response :as r&#93;
+   &#91;macchiato.middleware.restful-format :as restful-format&#93;
+   &#91;cljs.nodejs :as node&#93;&#41;
+  &#40;:require-macros
+   &#91;hiccups.core :refer &#91;html&#93;&#93;&#41;&#41;
+</code></pre><p>We've added a reference to the <code>db</code> namespace we created earlier, and the <code>anit-forgery</code> namespace. We'll need the latter to create a CSRF anti-forgery token in our form.</p><p>We can now update the <code>home</code> route as follows:</p><pre><code class="clojure">&#40;defn home &#91;req res raise&#93;
+  &#40;let &#91;af-token af/&#42;anti-forgery-token&#42;&#93;
+    &#40;db/messages
+     &#40;fn &#91;err result&#93;
+       &#40;println &quot;+++++ GOT RESULT +++++&quot;&#41;
+       &#40;js/console.log result&#41;
+       &#40;if err
+         &#40;raise err&#41;
+         &#40;-&gt;
+          &#91;:html
+           &#91;:body
+            &#91;:h2 &quot;Messages&quot;&#93;
+            &#91;:ul
+             &#40;for &#91;{:keys &#91;name message time&#93;} &#40;js-&gt;clj result :keywordize-keys true&#41;&#93;
+               &#91;:li name &quot; says &quot; message &quot; at &quot; time&#93;&#41;&#93;
+            &#91;:hr&#93;
+            &#91;:h2 &quot;leave a message&quot;&#93;
+            &#91;:form {:method &quot;POST&quot; :action &quot;/message&quot;}
+             &#91;:input
+              {:type :text
+               :name &quot;name&quot;
+               :placeholder &quot;name&quot;}&#93;
+             &#91;:input
+              {:type &quot;hidden&quot;
+               :name &quot;&#95;&#95;anti-forgery-token&quot;
+               :value af-token}&#93;
+             &#91;:input
+              {:type :text
+               :name &quot;message&quot;
+               :placeholder &quot;message&quot;}&#93;
+             &#91;:input
+              {:type :submit
+               :value &quot;add message&quot;}&#93;&#93;&#93;&#93;
+          &#40;html&#41;
+          &#40;r/ok&#41;
+          &#40;r/content-type &quot;text/html&quot;&#41;
+          &#40;res&#41;&#41;&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>The rest of the code in the function generates the HTML content for the page. We call <code>db/messages</code> to retrieve the currently stored messages and display them. Then we add a form that will allow the users to post a new message to the <code>/message</code> route.</p><p>Next, we'll add the handler for adding new messages that will look as follows:</p><pre><code class="clojure">&#40;defn message &#91;req res raise&#93;
+  &#40;db/add-message &#40;select-keys &#40;:params req&#41; &#91;:name :message&#93;&#41;&#41;
+  &#40;res &#40;r/found &quot;/&quot;&#41;&#41;&#41;
+</code></pre><p>All we do here is call the <code>db/add-message</code> function with the form parameters and redirect the user back to the home page.</p><p>Finally, we'll have to add the new route to the <code>routes</code> definition as follows:</p><pre><code class="clojure">&#40;def routes
+  &#91;&quot;/&quot; {&quot;&quot;        {:get home}
+        &quot;message&quot; {:post message}}&#93;&#41;
+</code></pre><p>That's all there is to it.</p><h3>Packaging the Application</h3><p>To package our application for production, we have to run the following command in the terminal:</p><pre><code>lein package
+</code></pre><p>This will compile the application and produce the <code>target/release/guestbook.js</code> file. It will also print the following configuration to the terminal:</p><pre><code class="javascript">{
+  &quot;private&quot;: true,
+  &quot;name&quot;: &quot;guestbook&quot;,
+  &quot;description&quot;: &quot;FIXME: write this!&quot;,
+  &quot;version&quot;: &quot;0.1.0-SNAPSHOT&quot;,
+  &quot;dependencies&quot;: {
+    &quot;random-bytes&quot;: &quot;1.0.0&quot;,
+    &quot;multiparty&quot;: &quot;4.1.3&quot;,
+    &quot;source-map-support&quot;: &quot;0.4.6&quot;,
+    &quot;ws&quot;: &quot;3.3.3&quot;,
+    &quot;sqlite3&quot;: &quot;3.1.8&quot;,
+    &quot;cookies&quot;: &quot;0.7.1&quot;,
+    &quot;etag&quot;: &quot;1.8.1&quot;,
+    &quot;lru&quot;: &quot;3.1.0&quot;,
+    &quot;qs&quot;: &quot;6.5.1&quot;,
+    &quot;content-type&quot;: &quot;1.0.4&quot;,
+    &quot;url&quot;: &quot;0.11.0&quot;,
+    &quot;simple-encryptor&quot;: &quot;1.1.1&quot;,
+    &quot;concat-stream&quot;: &quot;1.6.0&quot;
+  },
+  &quot;main&quot;: &quot;target/release/guestbook.js&quot;,
+  &quot;scripts&quot;: {
+    &quot;start&quot;: &quot;node target/release/guestbook.js&quot;
+  },
+  &quot;directories&quot;: {
+    &quot;test&quot;: &quot;test&quot;
+  },
+  &quot;devDependencies&quot;: {},
+  &quot;keywords&quot;: &#91;&#93;,
+  &quot;author&quot;: &quot;&quot;,
+  &quot;license&quot;: &quot;ISC&quot;
+}
+</code></pre><p>You'll have to save this configuration in a file called <code>package.json</code> and publish it along with your application.</p></div><div class="col-md-3 docs-nav"><h3>Documentation</h3><ul class="nav"><li class="active"><a href="getting-started.html">getting-started</a></li><li><a href="overview.html">Overview</a></li><li><a href="input-validation.html">Input Validation</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="html-templating.html">HTML Templating</a></li><li><a href="security-access.html">Security</a></li><li><a href="sessions-cookies.html">Sessions and Cookies</a></li><li><a href="routing.html">Routing</a></li><li><a href="restful-middleware.html">RESTful Middleware</a></li><li><a href="VPS-deployment.html">VPS Deployment</a></li><li><a href="component-lifecycle.html">Component Life Cycle</a></li><li><a href="documentation.html">Documentation</a></li><li><a href="libraries.html">Libraries</a></li></ul></div></div></div><div id="footer"><style type="text/css">#footer {
   padding-bottom: 54px;
   height: 360px;
   margin-right: 0px;
