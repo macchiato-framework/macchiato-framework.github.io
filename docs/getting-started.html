@@ -285,8 +285,7 @@ body .docs-nav li.active a {
 </code></pre><p>We've added a reference to the <code>db</code> namespace we created earlier, and the <code>anit-forgery</code> namespace. We'll need the latter to create a CSRF anti-forgery token in our form.</p><p>We can now update the <code>home</code> route as follows:</p><pre><code class="clojure">&#40;defn home &#91;req res raise&#93;
   &#40;let &#91;af-token af/&#42;anti-forgery-token&#42;&#93;
     &#40;db/messages
-     &#40;fn &#91;err result&#93;       
-       &#40;js/console.log result&#41;
+     &#40;fn &#91;err result&#93;              
        &#40;if err
          &#40;raise err&#41;
          &#40;-&gt;
