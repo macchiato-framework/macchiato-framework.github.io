@@ -5,13 +5,13 @@ page-index: 3
 section: "Getting Started"
 ---
 
-Enabling websockets for your Macchiato server is quite simple. In the namespace `your-project.core`, there is a `server` 
+Enabling websockets is quite simple. In the namespace `<project-name>.core`, there is a `server` 
 function that configures and starts a server. This server instance needs to be wrapped with a function that adds 
 websocket support, like this:
 
-```
+```clojure
 (-> (server/start opts)
-    (server/start-ws (fn [{:keys [websocket uri]}]
+    (server/start-ws (fn [{:keys [websocket uri] :as req}]
                          (.send websocket (str "Websocket connected for path " uri))
                          (.on websocket
                               "message"
